@@ -5,5 +5,8 @@
     <string name="action_settings">Settings</string>
     <string name="status_hint">Enter your latest status here!</string>
     <string name="submit_button_label">Submit status</string>
-
+    <string name="success">Success!</string>
+    <string name="fail">Failed!</string>
+    <string name="progress_title">Posting your update&#8230;</string>
+    <string name="progress_msg">Please be patient while we let the world know your thoughts.</string>
 </resources>

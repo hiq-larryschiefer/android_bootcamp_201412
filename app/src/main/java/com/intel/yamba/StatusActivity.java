@@ -1,5 +1,6 @@
 package com.intel.yamba;
 
+import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
@@ -106,31 +107,51 @@ public class StatusActivity extends ActionBarActivity implements TextWatcher, Vi
     @Override
     public void onClick(View v) {
         String statusText = mStatus.getText().toString();
+        mSubmitBtn.setEnabled(false);
         mTmpTask = new YambaSubmitterTask();
         mTmpTask.execute(statusText);
     }
 
     private class YambaSubmitterTask extends AsyncTask<String, Void, String> {
+        ProgressDialog          mProgDlg;
+
         @Override
         protected String doInBackground(String... params) {
             String status = params[0];
-            String result = "Success!";
+            String result = StatusActivity.this.getString(R.string.success);
             YambaClient client = new YambaClient("student", "password");
             try {
                 client.postStatus(status);
             } catch (YambaClientException e) {
                 e.printStackTrace();
-                result = "Failed!";
+                result = StatusActivity.this.getString(R.string.fail);
             }
             return result;
         }
 
         @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            String title = StatusActivity.this.getString(R.string.progress_title);
+            String msg = StatusActivity.this.getString(R.string.progress_msg);
+            mProgDlg = ProgressDialog.show(StatusActivity.this, title, msg, true);
+        }
+
+        @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
+            mProgDlg.dismiss();
             Toast.makeText(StatusActivity.this, s, Toast.LENGTH_LONG).show();
             mStatus.setText("");
+            mSubmitBtn.setEnabled(true);
             mTmpTask = null;
+        }
+
+        @Override
+        protected void onCancelled() {
+            mProgDlg.dismiss();
+            mSubmitBtn.setEnabled(true);
+            super.onCancelled();
         }
     }
 
