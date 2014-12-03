@@ -45,6 +45,7 @@ public class StatusActivity extends ActionBarActivity implements TextWatcher, Vi
 
     @Override
     protected void onPause() {
+        //  Make sure the AsyncTask (if it exists) is canceled)
         if (mTmpTask != null) {
             mTmpTask.cancel(true);
             mTmpTask = null;
