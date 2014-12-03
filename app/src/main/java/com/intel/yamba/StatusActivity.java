@@ -3,6 +3,9 @@ package com.intel.yamba;
 import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Message;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -19,15 +22,24 @@ import com.marakana.android.yamba.clientlib.YambaClient;
 import com.marakana.android.yamba.clientlib.YambaClientException;
 
 
-public class StatusActivity extends ActionBarActivity implements TextWatcher, View.OnClickListener {
+public class StatusActivity extends ActionBarActivity implements TextWatcher,
+                                                                 View.OnClickListener,
+                                                                 Handler.Callback {
+    private static final boolean        USE_ASYNC_TASK = false;
     private static final int            MAX_STATUS_LEN = 140;
     private static final int            WARNING_STATUS_LEN = 10;
+
+    private static final int            MSG_UI_STATUS_DONE = 1;
 
     private TextView            mRemainText;
     private EditText            mStatus;
     private Button              mSubmitBtn;
     private int                 mDefaultTextColor;
     private YambaSubmitterTask  mTmpTask;
+    ProgressDialog              mProgDlg;
+
+    private Handler             mHandler = new Handler(this);
+    private YambaPostWorkerThread mWorkerThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,16 +54,42 @@ public class StatusActivity extends ActionBarActivity implements TextWatcher, Vi
 
         mSubmitBtn = (Button)findViewById(R.id.submit_status);
         mSubmitBtn.setOnClickListener(this);
+
+        if (!USE_ASYNC_TASK) {
+            mWorkerThread = new YambaPostWorkerThread(this, "post_worker");
+            mWorkerThread.start();
+        }
     }
 
     @Override
     protected void onPause() {
         //  Make sure the AsyncTask (if it exists) is canceled)
-        if (mTmpTask != null) {
-            mTmpTask.cancel(true);
-            mTmpTask = null;
+        if (USE_ASYNC_TASK) {
+            if (mTmpTask != null) {
+                mTmpTask.cancel(true);
+                mTmpTask = null;
+            }
+        } else {
+            //  Stop the worker from posting if it is currently doing so
+            mWorkerThread.interrupt();
         }
+
+        if (mProgDlg != null) {
+            mProgDlg.dismiss();
+            mProgDlg = null;
+            mSubmitBtn.setEnabled(true);
+        }
+
         super.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        if (!USE_ASYNC_TASK) {
+            mWorkerThread.shutdown();
+        }
+
+        super.onDestroy();
     }
 
     @Override
@@ -108,12 +146,45 @@ public class StatusActivity extends ActionBarActivity implements TextWatcher, Vi
     public void onClick(View v) {
         String statusText = mStatus.getText().toString();
         mSubmitBtn.setEnabled(false);
-        mTmpTask = new YambaSubmitterTask();
-        mTmpTask.execute(statusText);
+
+        //  TODO: Enforce the MAX_STATUS_LEN bounds check!
+
+        if (USE_ASYNC_TASK) {
+            mTmpTask = new YambaSubmitterTask();
+            mTmpTask.execute(statusText);
+        } else {
+            mWorkerThread.postStatus(statusText);
+        }
+
+        String title = getString(R.string.progress_title);
+        String msg = getString(R.string.progress_msg);
+        mProgDlg = ProgressDialog.show(this, title, msg, true);
+    }
+
+    @Override
+    public boolean handleMessage(Message msg) {
+        boolean ret = false;
+
+        switch (msg.what) {
+            case MSG_UI_STATUS_DONE:
+                String statusMsg = (String)msg.obj;
+                Toast.makeText(this, statusMsg, Toast.LENGTH_LONG).show();
+                mProgDlg.dismiss();
+                mSubmitBtn.setEnabled(true);
+                mStatus.setText("");
+                ret = true;
+                break;
+        }
+
+        return ret;
+    }
+
+    public void postDone(String result) {
+        Message msg = mHandler.obtainMessage(MSG_UI_STATUS_DONE, result);
+        msg.sendToTarget();
     }
 
     private class YambaSubmitterTask extends AsyncTask<String, Void, String> {
-        ProgressDialog          mProgDlg;
 
         @Override
         protected String doInBackground(String... params) {
@@ -132,15 +203,11 @@ public class StatusActivity extends ActionBarActivity implements TextWatcher, Vi
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            String title = StatusActivity.this.getString(R.string.progress_title);
-            String msg = StatusActivity.this.getString(R.string.progress_msg);
-            mProgDlg = ProgressDialog.show(StatusActivity.this, title, msg, true);
         }
 
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            mProgDlg.dismiss();
             Toast.makeText(StatusActivity.this, s, Toast.LENGTH_LONG).show();
             mStatus.setText("");
             mSubmitBtn.setEnabled(true);
@@ -149,7 +216,6 @@ public class StatusActivity extends ActionBarActivity implements TextWatcher, Vi
 
         @Override
         protected void onCancelled() {
-            mProgDlg.dismiss();
             mSubmitBtn.setEnabled(true);
             super.onCancelled();
         }
