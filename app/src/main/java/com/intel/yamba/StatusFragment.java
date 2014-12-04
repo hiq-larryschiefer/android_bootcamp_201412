@@ -93,16 +93,11 @@ public class StatusFragment extends Fragment implements TextWatcher, View.OnClic
         mSettingsBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startSettingsActivity();
+                mCallback.needSettings();
             }
         });
 
         return root;
-    }
-
-    private void startSettingsActivity() {
-        Intent settingsIntent = new Intent(getActivity(), SettingsActivity.class);
-        startActivity(settingsIntent);
     }
 
     @Override
@@ -157,7 +152,7 @@ public class StatusFragment extends Fragment implements TextWatcher, View.OnClic
             tmp = act.getString(R.string.api_uri_key);
             String apiUri = prefs.getString(tmp, "");
             if ((pw.length() == 0) || (username.length() == 0) || (apiUri.length() == 0)) {
-                startSettingsActivity();
+                mCallback.needSettings();
                 return act.getString(R.string.fail);
             }
 

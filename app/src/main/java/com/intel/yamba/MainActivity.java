@@ -1,18 +1,30 @@
 package com.intel.yamba;
 
 import android.app.Activity;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements StatusFragment.StatusRequestCallback {
+
+    private static final String         STATUS_FRAG = "STATUS";
+    private static final String         SETTINGS_FRAG = "SETTINGS";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if (savedInstanceState == null) {
+            FragmentManager fm = getFragmentManager();
+            FragmentTransaction ft = fm.beginTransaction();
+            StatusFragment frag = StatusFragment.createInstance();
+            ft.add(R.id.frag_container, frag, STATUS_FRAG);
+            ft.commit();
+        }
     }
 
     @Override
@@ -42,5 +54,19 @@ public class MainActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+    private void startSettingsFragment() {
+        //  TODO: Change the fragment
+        FragmentManager fm = getFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+        SettingsFragment frag = SettingsFragment.createInstance();
+        ft.replace(R.id.frag_container, frag, SETTINGS_FRAG);
+        ft.addToBackStack(SETTINGS_FRAG);
+        ft.commit();
+    }
 
+
+    @Override
+    public void needSettings() {
+        startSettingsFragment();
+    }
 }
