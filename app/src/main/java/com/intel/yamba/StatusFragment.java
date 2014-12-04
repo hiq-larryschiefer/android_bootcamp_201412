@@ -138,41 +138,50 @@ public class StatusFragment extends Fragment implements TextWatcher, View.OnClic
 
     private class YambaSubmitterTask extends AsyncTask<String, Void, String> {
         ProgressDialog mProgDlg;
+        String mUsername;
+        String mPw;
+        String mUri;
+        Activity mAct;
 
         @Override
         protected String doInBackground(String... params) {
-            Activity act = getActivity();
             String status = params[0];
-            String result = act.getString(R.string.success);
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(act);
-            String tmp = act.getString(R.string.username_key);
-            String username = prefs.getString(tmp, "");
-            tmp = act.getString(R.string.password_key);
-            String pw = prefs.getString(tmp, "");
-            tmp = act.getString(R.string.api_uri_key);
-            String apiUri = prefs.getString(tmp, "");
-            if ((pw.length() == 0) || (username.length() == 0) || (apiUri.length() == 0)) {
-                mCallback.needSettings();
-                return act.getString(R.string.fail);
+            String result = mAct.getString(R.string.fail);
+
+            if (!isCancelled()) {
+                YambaClient client = new YambaClient(mUsername, mPw, mUri);
+                try {
+                    client.postStatus(status);
+                    result = mAct.getString(R.string.success);
+                } catch (YambaClientException e) {
+                    e.printStackTrace();
+                }
             }
 
-            YambaClient client = new YambaClient(username, pw, apiUri);
-            try {
-                client.postStatus(status);
-            } catch (YambaClientException e) {
-                e.printStackTrace();
-                result = act.getString(R.string.fail);
-            }
             return result;
         }
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            Activity act = getActivity();
-            String title = act.getString(R.string.progress_title);
-            String msg = act.getString(R.string.progress_msg);
-            mProgDlg = ProgressDialog.show(act, title, msg, true);
+
+            mAct = getActivity();
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mAct);
+            String tmp = mAct.getString(R.string.username_key);
+            mUsername = prefs.getString(tmp, "");
+            tmp = mAct.getString(R.string.password_key);
+            mPw = prefs.getString(tmp, "");
+            tmp = mAct.getString(R.string.api_uri_key);
+            mUri = prefs.getString(tmp, "");
+            if ((mPw.length() == 0) || (mUsername.length() == 0) || (mUri.length() == 0)) {
+                mCallback.needSettings();
+                cancel(true);
+                return;
+            }
+
+            String title = mAct.getString(R.string.progress_title);
+            String msg = mAct.getString(R.string.progress_msg);
+            mProgDlg = ProgressDialog.show(mAct, title, msg, true);
         }
 
         @Override
@@ -187,7 +196,9 @@ public class StatusFragment extends Fragment implements TextWatcher, View.OnClic
 
         @Override
         protected void onCancelled() {
-            mProgDlg.dismiss();
+            if (mProgDlg != null) {
+                mProgDlg.dismiss();
+            }
             mSubmitBtn.setEnabled(true);
             super.onCancelled();
         }
