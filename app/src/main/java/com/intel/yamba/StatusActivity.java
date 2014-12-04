@@ -1,8 +1,11 @@
 package com.intel.yamba;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -26,6 +29,7 @@ public class StatusActivity extends ActionBarActivity implements TextWatcher, Vi
     private TextView            mRemainText;
     private EditText            mStatus;
     private Button              mSubmitBtn;
+    private Button              mSettingsBtn;
     private int                 mDefaultTextColor;
     private YambaSubmitterTask  mTmpTask;
 
@@ -42,6 +46,19 @@ public class StatusActivity extends ActionBarActivity implements TextWatcher, Vi
 
         mSubmitBtn = (Button)findViewById(R.id.submit_status);
         mSubmitBtn.setOnClickListener(this);
+
+        mSettingsBtn = (Button)findViewById(R.id.btn_settings);
+        mSettingsBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startSettingsActivity();
+            }
+        });
+    }
+
+    private void startSettingsActivity() {
+        Intent settingsIntent = new Intent(this, SettingsActivity.class);
+        startActivity(settingsIntent);
     }
 
     @Override
@@ -119,7 +136,17 @@ public class StatusActivity extends ActionBarActivity implements TextWatcher, Vi
         protected String doInBackground(String... params) {
             String status = params[0];
             String result = StatusActivity.this.getString(R.string.success);
-            YambaClient client = new YambaClient("student", "password");
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(StatusActivity.this);
+            String tmp = StatusActivity.this.getString(R.string.username_key);
+            String username = prefs.getString(tmp, "");
+            tmp = StatusActivity.this.getString(R.string.password_key);
+            String pw = prefs.getString(tmp, "");
+            if ((pw.length() == 0) || (username.length() == 0)) {
+                startSettingsActivity();
+                return StatusActivity.this.getString(R.string.fail);
+            }
+
+            YambaClient client = new YambaClient(username, pw);
             try {
                 client.postStatus(status);
             } catch (YambaClientException e) {
