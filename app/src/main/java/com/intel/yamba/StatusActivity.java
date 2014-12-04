@@ -1,12 +1,12 @@
 package com.intel.yamba;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -22,7 +22,7 @@ import com.marakana.android.yamba.clientlib.YambaClient;
 import com.marakana.android.yamba.clientlib.YambaClientException;
 
 
-public class StatusActivity extends ActionBarActivity implements TextWatcher, View.OnClickListener {
+public class StatusActivity extends Activity implements TextWatcher, View.OnClickListener {
     private static final int            MAX_STATUS_LEN = 140;
     private static final int            WARNING_STATUS_LEN = 10;
 
