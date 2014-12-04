@@ -46,8 +46,8 @@ public class MainActivity extends Activity implements StatusFragment.StatusReque
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            startSettingsFragment();
             return true;
         }
 
@@ -55,7 +55,6 @@ public class MainActivity extends Activity implements StatusFragment.StatusReque
     }
 
     private void startSettingsFragment() {
-        //  TODO: Change the fragment
         FragmentManager fm = getFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
         SettingsFragment frag = SettingsFragment.createInstance();

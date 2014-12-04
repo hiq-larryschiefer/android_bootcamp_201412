@@ -36,12 +36,11 @@ public class StatusFragment extends Fragment implements TextWatcher, View.OnClic
     private static final int            MAX_STATUS_LEN = 140;
     private static final int            WARNING_STATUS_LEN = 10;
 
-    private TextView mRemainText;
-    private EditText mStatus;
-    private Button mSubmitBtn;
-    private Button              mSettingsBtn;
-    private int                 mDefaultTextColor;
-    private YambaSubmitterTask  mTmpTask;
+    private TextView                mRemainText;
+    private EditText                mStatus;
+    private Button                  mSubmitBtn;
+    private int                     mDefaultTextColor;
+    private YambaSubmitterTask      mTmpTask;
     private StatusRequestCallback   mCallback;
 
     public StatusFragment() {
@@ -88,14 +87,6 @@ public class StatusFragment extends Fragment implements TextWatcher, View.OnClic
 
         mSubmitBtn = (Button)root.findViewById(R.id.submit_status);
         mSubmitBtn.setOnClickListener(this);
-
-        mSettingsBtn = (Button)root.findViewById(R.id.btn_settings);
-        mSettingsBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mCallback.needSettings();
-            }
-        });
 
         return root;
     }
