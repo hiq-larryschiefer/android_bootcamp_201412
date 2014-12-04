@@ -12,4 +12,10 @@
         android:title="@string/password_title"
         android:password="true" />
 
+    <!-- New preference for overriding the URI used to access the Yamba server -->
+    <EditTextPreference
+        android:key="@string/api_uri_key"
+        android:summary="@string/api_uri_summary"
+        android:title="@string/api_uri_title" />
+
 </PreferenceScreen>

@@ -141,12 +141,14 @@ public class StatusActivity extends ActionBarActivity implements TextWatcher, Vi
             String username = prefs.getString(tmp, "");
             tmp = StatusActivity.this.getString(R.string.password_key);
             String pw = prefs.getString(tmp, "");
-            if ((pw.length() == 0) || (username.length() == 0)) {
+            tmp = StatusActivity.this.getString(R.string.api_uri_key);
+            String apiUri = prefs.getString(tmp, "");
+            if ((pw.length() == 0) || (username.length() == 0) || (apiUri.length() == 0)) {
                 startSettingsActivity();
                 return StatusActivity.this.getString(R.string.fail);
             }
 
-            YambaClient client = new YambaClient(username, pw);
+            YambaClient client = new YambaClient(username, pw, apiUri);
             try {
                 client.postStatus(status);
             } catch (YambaClientException e) {

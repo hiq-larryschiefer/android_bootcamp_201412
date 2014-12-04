@@ -18,5 +18,8 @@
     <string name="title_activity_settings">Settings</string>
     <string name="btn_settings_label">Settings</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="api_uri_key">k_api_uri</string>
+    <string name="api_uri_summary">The URI for the Yamba server API.</string>
+    <string name="api_uri_title">Yamba server API URI</string>
 
 </resources>
