@@ -1,5 +1,6 @@
 package com.intel.yamba;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -25,6 +26,10 @@ public class MainActivity extends Activity implements StatusFragment.StatusReque
             ft.add(R.id.frag_container, frag, STATUS_FRAG);
             ft.commit();
         }
+
+        ActionBar ab = getActionBar();
+//        ab.setHomeButtonEnabled(true);
+        ab.setDisplayHomeAsUpEnabled(true);
     }
 
     @Override
@@ -51,6 +56,9 @@ public class MainActivity extends Activity implements StatusFragment.StatusReque
             return true;
         }
 
+        if (id == android.R.id.home) {
+            onBackPressed();
+        }
         return super.onOptionsItemSelected(item);
     }
 
